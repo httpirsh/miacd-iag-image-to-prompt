@@ -1,45 +1,97 @@
-# TP2 Student Starter Pack
+# TP2: Image-to-Prompt Inversion with Metric-Guided Search
 
-Files:
+**Student IDs**: 2021231014, 2021221971
 
-- `TP2_StarterPack_Students.ipynb`: Colab/VS Code starter notebook.
-- `tp2-chosen/`: copy of the TP2 target images.
-- `tp2-chosen.zip`: optional zip with the same target images.
-- `outputs/`: local output folder placeholder.
+## Project Overview
 
-Recommended Google Drive layout for Colab / VS Code Colab extension:
+This project implements **VLM-initialized, metric-guided iterative prompt inversion with a global visual modifier bank** for image-to-prompt generation. The goal is to find text prompts that, when rendered with a fixed diffusion model and known seed, produce images visually similar to target images.
 
-```text
-MyDrive/GENAI_TP2/tp2-chosen/*.png
+### Key Insight
+
+This is not simple image captioning. A prompt is considered successful only if rendering it with the fixed `SimianLuo/LCM_Dreamshaper_v7` model using the encoded seed produces an image that closely matches the target.
+
+## Pipeline Architecture
+
+The optimization loop follows:
+
+```
+target image → VLM caption → structured visual analysis → modifier bank expansion 
+→ deterministic LCM render → image-side metrics → ranking → refinement
 ```
 
-or:
+## Implementation Details
 
-```text
-MyDrive/GENAI_TP2/tp2-chosen.zip
+### Core Components
+
+- **Local image loading**: Reads target PNG images with seed information encoded in filenames
+- **BLIP captioning**: Initial visual understanding using Vision-Language Model
+- **Global modifier banks**: Style, lighting, camera, and background modifiers
+- **LCM rendering**: Fast, deterministic image generation (8 steps, 768x768)
+- **Multi-metric evaluation**: CLIP similarity, LPIPS perceptual loss, MSE pixel-level error
+- **Iterative refinement**: Metric-guided candidate expansion and ranking
+- **Batch processing**: Parallel evaluation across multiple target images
+
+### Model Configuration
+
+- **Model**: `SimianLuo/LCM_Dreamshaper_v7`
+- **Inference steps**: 8
+- **Guidance scale**: 8.0
+- **LCM origin steps**: 50
+- **Resolution**: 768×768
+- **Seeds**: Extracted from target filename (e.g., `1159_25.png` → seed `1159`)
+
+## Project Structure
+
+```
+IAGTP2_2021231014_2021221971/
+├── README.md                           # This file
+├── TP2_Project.ipynb                   # Main implementation notebook
+├── tp2-chosen/                         # Target images
+├── model_cache/                        # Cached models (CLIP, BLIP, LCM, etc.)
+└── outputs/                            # Generated results
+    ├── all_ranked_results.csv          # Aggregated rankings across all runs
+    ├── final_prompts.csv               # Best prompts per target image
+    ├── round_comparison.csv            # Metrics comparison between rounds
+    └── [timestamp]_round[N]_[stage]/   # Individual run outputs
 ```
 
-The notebook mounts Google Drive, searches these paths, extracts the zip if needed, and saves generated outputs to:
+## Results
 
-```text
-MyDrive/GENAI_TP2/outputs/
-```
+### Target Images Processed: 6
+- `1159_25.png` - Glass with orange juice and fruit
+- `1159_29.png` - Palm tree in ocean at sunset
+- `1159_3.png` - Anime warrior with armor and sword
+- `1159_7.png` - Hedgehog-like creature with spiky fur
+- `7836.png` - Astronaut on alien planet
+- `9338.png` - Fantasy creature with dragon scales
 
-The LCM settings match the TP2 target generation setup:
+### Output Files
 
-- model: `SimianLuo/LCM_Dreamshaper_v7`
-- seed: parsed from target filename
-- inference steps: `8`
-- guidance scale: `8.0`
-- `lcm_origin_steps`: `50`
-- resolution: `768x768`
+- **final_prompts.csv**: Best refined prompts for each target with metrics
+  - CLIP similarity scores: 0.81–0.94
+  - LPIPS (perceptual loss): 0.53–0.67
+  - MSE (pixel-level): 0.026–0.065
 
-If Colab raises an error such as:
+- **Rankings & Analysis**: Per-image candidate rankings with full metric breakdowns
 
-```text
-cannot import name '_Ink' from 'PIL._typing'
-```
+### Execution Log
 
-restart the runtime/kernel and rerun the notebook from the first cell. The install cell pins `Pillow<12` to avoid that Diffusers/Pillow compatibility issue.
+Multiple optimization rounds completed:
+- Round 0: Initial prompt expansion (low VRAM mode)
+- Round 1: Metric-guided refinement
 
-The install cell also pins `pandas<3` to avoid dependency conflicts with packages commonly preinstalled in Colab, such as Gradio.
+## Dependencies
+
+- PyTorch with CUDA support
+- Diffusers, Transformers (HuggingFace)
+- BLIP for captioning
+- CLIP for semantic similarity
+- LPIPS for perceptual loss
+- PIL, NumPy, Pandas, Matplotlib
+
+## Notes
+
+- Cached models stored locally in `model_cache/` for offline access
+- GPU required for reasonable inference speed
+- The notebook includes cleanup steps to manage VRAM efficiently
+- Fully local execution (no Google Drive dependency required)
