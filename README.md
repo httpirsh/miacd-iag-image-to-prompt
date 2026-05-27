@@ -79,6 +79,7 @@ IAGTP2_2021231014_2021221971/
 Multiple optimization rounds completed:
 - Round 0: Initial prompt expansion (low VRAM mode)
 - Round 1: Metric-guided refinement
+- Round 2: LLM-based refinement (based on `llm_refinement_implementation_guide.pdf`)
 
 ## Dependencies
 
