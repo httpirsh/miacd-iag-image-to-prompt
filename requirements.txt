@@ -11,4 +11,4 @@ lpips
 numpy
 ipython
 python-dotenv
-google-generativeai
+groq

@@ -3,56 +3,42 @@ import re
 import os
 import pandas as pd
 from pathlib import Path
-import google.generativeai as genai
+from groq import Groq
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def call_llm(instruction, api_key=None):
     """
-    Calls the Gemini API (2026 Version) for prompt refinement.
+    Calls the Groq API (Llama 3.1 8B Instant) for prompt refinement.
     """
     if api_key is None:
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
     
     if not api_key:
-        raise ValueError("GEMINI_API_KEY not found. Check your .env file.")
+        raise ValueError("GROQ_API_KEY not found. Check your .env file.")
         
-    genai.configure(api_key=api_key)
+    client = Groq(api_key=api_key)
     
-    # Using the 2026 standard models
-    target_models = [
-        'gemini-2.5-flash',      # Your requested model
-        'gemini-2.5-flash-lite', # High-speed alternative
-        'gemini-2.0-flash',      # 2025 fallback
-    ]
+    model_name = "llama-3.1-8b-instant"
     
-    for model_name in target_models:
-        try:
-            print(f"  > Attempting {model_name}...", end=" ")
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(instruction)
-            print("✅")
-            return response.text
-        except Exception as e:
-            if "404" in str(e) or "not found" in str(e).lower():
-                print("❌ (Not Found)")
-                continue
-            else:
-                print(f"⚠️ (Error: {str(e)[:50]})")
-                continue
-
-    # Auto-discovery if hardcoded names fail
     try:
-        available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        best_match = next((m for m in available if '2.5-flash' in m), available[0] if available else None)
-        if best_match:
-            print(f"  > Auto-detected best model: {best_match}...", end=" ")
-            model = genai.GenerativeModel(best_match)
-            response = model.generate_content(instruction)
-            print("✅")
-            return response.text
-    except:
-        pass
-
-    raise ValueError("Could not connect to Gemini 2.5 Flash. Check API Key and Quotas at aistudio.google.com")
+        print(f"  > Attempting {model_name}...", end=" ")
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": instruction,
+                }
+            ],
+            model=model_name,
+            response_format={"type": "json_object"}
+        )
+        print("✅")
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        print(f"⚠️ (Error: {str(e)[:50]})")
+        raise e
 
 def analysis_to_text(analysis):
     parts = []
@@ -135,8 +121,37 @@ def build_refined_candidate_bank(top_df, target_analysis, api_key=None, iteratio
                 for p in new_prompts:
                     refined_bank[target_key].append({
                         "prompt": p, 
-                        "prompt_type": f"gemini_2.5_refinement_r{iteration}_from_{row.get('prompt_type', 'unknown')}"
+                        "prompt_type": f"groq_llama_3.1_refinement_r{iteration}_from_{row.get('prompt_type', 'unknown')}"
                     })
             except Exception as e:
                 print(f"    Error on {target_key}: {e}")
     return refined_bank
+
+def add_combined_score(df, clip_weight=0.20, lpips_weight=0.70, mse_weight=0.10):
+    """
+    Normalize metrics per target and compute one combined score.
+    Higher score = better prompt.
+    
+    Weights updated to prioritize LPIPS (0.70) over CLIP (0.20) and MSE (0.10).
+    """
+    df = df.copy()
+
+    def normalize_group(group):
+        group = group.copy()
+        def minmax(series):
+            if series.max() == series.min():
+                return series * 0.0 + 1.0 # If all same, return 1.0
+            return (series - series.min()) / (series.max() - series.min() + 1e-8)
+
+        group["clip_norm"] = minmax(group["clip_similarity"])
+        group["lpips_norm"] = minmax(group["lpips"])
+        group["mse_norm"] = minmax(group["mse"])
+
+        group["score"] = (
+            clip_weight * group["clip_norm"]
+            + lpips_weight * (1.0 - group["lpips_norm"])
+            + mse_weight * (1.0 - group["mse_norm"])
+        )
+        return group
+
+    return df.groupby("target", group_keys=False).apply(normalize_group)
