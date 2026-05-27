@@ -7,4 +7,3 @@ uv.lock
 .venv
 .env
 *.pdf
-*.txt

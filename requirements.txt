@@ -1,0 +1,14 @@
+torch
+torchvision
+diffusers[torch]
+transformers
+accelerate
+safetensors
+matplotlib
+pandas<3
+Pillow<12
+lpips
+numpy
+ipython
+python-dotenv
+google-generativeai
