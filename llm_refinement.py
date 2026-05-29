@@ -83,7 +83,8 @@ You are an expert prompt engineer. Your goal is to refine a text prompt to more 
    - If 'LPIPS' or 'MSE' is high, the visual structure/colors are wrong. Adjust lighting, composition, and style keywords based ONLY on the Target Description.
 4. Keep prompts focused. Avoid generic "quality" buzzwords (e.g., "highly detailed", "masterpiece") unless they are essential to the style in the Target Description.
 5. Do NOT add any new elements (subjects, objects, colors) that are not in the Target Image Description.
-6. Output EXACTLY {n_variants} improved prompt variants.
+6. CRITICAL: Each prompt MUST be under 60 words to fit within the 77-token limit of the CLIP text encoder.
+7. Output EXACTLY {n_variants} improved prompt variants.
 
 ## Response Format:
 Return a JSON object with a single key 'prompts' containing an array of strings.
