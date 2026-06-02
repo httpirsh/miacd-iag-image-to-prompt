@@ -128,12 +128,10 @@ def build_refined_candidate_bank(top_df, target_analysis, api_key=None, iteratio
                 print(f"    Error on {target_key}: {e}")
     return refined_bank
 
-def add_combined_score(df, clip_weight=0.20, lpips_weight=0.70, mse_weight=0.10):
+def add_combined_score(df, clip_weight=0.45, lpips_weight=0.45, mse_weight=0.10):
     """
     Normalize metrics per target and compute one combined score.
     Higher score = better prompt.
-    
-    Weights updated to prioritize LPIPS (0.70) over CLIP (0.20) and MSE (0.10).
     """
     df = df.copy()
 
