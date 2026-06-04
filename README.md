@@ -10,6 +10,134 @@ This project implements **VLM-initialized, metric-guided iterative prompt invers
 
 This is not simple image captioning. A prompt is considered successful only if rendering it with the fixed `SimianLuo/LCM_Dreamshaper_v7` model using the encoded seed produces an image that closely matches the target.
 
+## Model Versions & Configuration
+
+### Core Models
+
+| Component | Model ID / Version | Purpose |
+|-----------|-------------------|---------|
+| **LCM (Image Generator)** | `SimianLuo/LCM_Dreamshaper_v7` | Deterministic image rendering from text prompts |
+| **VLM (Caption Initialization)** | `Salesforce/blip-image-captioning-base` | Initial visual understanding via BLIP |
+| **Semantic Similarity** | `openai/clip-vit-base-patch32` | Image-image semantic matching metric |
+| **Perceptual Distance** | LPIPS (AlexNet backbone) | Deep feature-based visual similarity |
+| **LLM (Prompt Refinement)** | `llama-3.1-8b-instant` (Groq API) | LLM-driven prompt optimization |
+
+### Precision & Device Configuration
+
+- **CUDA-enabled**: All models use `torch.float16` for GPU memory efficiency
+- **CPU fallback**: `torch.float32` precision when CUDA unavailable
+- **Memory optimization**: CPU offload enabled for LCM; metrics computed on CPU to preserve GPU for generation
+
+## Hyperparameters
+
+### LCM Rendering Configuration
+
+```python
+class LCMConfig:
+    model_id: str = "SimianLuo/LCM_Dreamshaper_v7"
+    num_inference_steps: int = 8              # Fast LCM inference
+    guidance_scale: float = 8.0               # Classifier-free guidance strength
+    lcm_origin_steps: int = 50                # Equivalent steps for guidance calculation
+    width: int = 384                          # Generated image width (pixels)
+    height: int = 384                         # Generated image height (pixels)
+```
+
+### VLM Caption Generation
+
+- **Max new tokens**: 60 (limit to summary-length captions)
+- **Num beams**: 5 (beam search for caption generation)
+- **Model precision**: float16 on CUDA, float32 on CPU
+
+### Prompt Processing
+
+- **Max prompt tokens**: 75 (CLIP text encoder limit)
+- **Tokenizer**: LCM model's tokenizer for token counting
+- **Truncation**: Applied to all generated prompts to ensure CLIP compatibility
+
+### Metric Scoring & Normalization
+
+The combined score normalizes and weights three complementary metrics **per target**:
+
+```python
+score = (
+    0.50 * CLIP_similarity_normalized +
+    0.40 * (1.0 - LPIPS_normalized) +
+    0.10 * (1.0 - MSE_normalized)
+)
+```
+
+- **CLIP weight**: 0.50 (semantic content alignment)
+- **LPIPS weight**: 0.40 (perceptual visual quality)
+- **MSE weight**: 0.10 (pixel-level accuracy)
+- **Normalization**: Min-max scaling per target to ensure equal metric influence
+
+### Optimization Rounds
+
+1. **Round 0 - Initial Expansion**: 10 candidates per target (VLM-initialized, structured analysis, global modifier combinations)
+2. **Round 1 - Metric-Guided Refinement**: 10 mutations per top-3 candidate
+3. **Round 2 - LLM Refinement**: 4 variants per top-3 candidate via Groq API
+
+## Random Seeds & Deterministic Generation
+
+### Render Seeds (Per Target Image)
+
+Seeds are extracted from target filename prefixes:
+
+| Target Image | Encoded Seed | Used For |
+|--------------|-------------|----------|
+| `1159_3.png` | 1159 | Anime warrior rendering |
+| `1159_7.png` | 1159 | Hedgehog creature rendering |
+| `1159_25.png` | 1159 | Orange juice still life rendering |
+| `1159_29.png` | 1159 | Palm tree seascape rendering |
+| `7836.png` | 7836 | Astronaut sci-fi rendering |
+| `9338.png` | 9338 | Fantasy dragon hamster rendering |
+
+### Stochastic Components & Seeding
+
+#### 1. LCM Image Generation (Deterministic)
+```python
+generator = torch.Generator(device=device).manual_seed(seed)
+image = pipe(
+    prompt=prompt,
+    generator=generator,
+    ...
+)
+```
+- **Seed source**: Extracted from target filename
+- **Generator device**: CUDA if available, else CPU
+- **Result**: Identical image for same prompt + seed across runs
+
+#### 2. VLM Caption Generation (Partially Stochastic)
+- **Beam search with num_beams=5**: Introduces some variability in caption selection
+- **No explicit seed setting**: Uses PyTorch's default RNG (not seeded per caption)
+- **Impact**: Minimal; captions are used only as initialization, later overridden by metric-driven expansion
+
+#### 3. Prompt Expansion (Deterministic)
+- All candidate generation is deterministic (combinatorial expansion from fixed modifier banks)
+- No randomization in modifier selection; all combinations are generated
+- Metric-driven ranking (not random) determines which modifiers are retained
+
+#### 4. Metric Computation (Deterministic)
+- CLIP similarity: Deterministic feature extraction and cosine similarity
+- LPIPS: Deterministic feature extraction (frozen networks)
+- MSE: Direct pixel comparison, fully deterministic
+
+### Reproducibility
+
+To reproduce exact results for a target image:
+
+```python
+# Render with known seed
+seed = seed_from_filename("1159_3.png")  # seed = 1159
+generator = torch.Generator("cuda").manual_seed(seed)
+image = pipe(prompt=prompt, generator=generator, ...)
+
+# Metrics are deterministic
+metrics = evaluate_image_pair(target_img, generated_img)
+```
+
+**Note**: VLM captions (`Salesforce/blip-image-captioning-base`) may vary slightly between runs due to beam search stochasticity, but this does not affect final results since VLM captions are only used as initialization.
+
 ## Setup
 
 ### Environment Configuration

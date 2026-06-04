@@ -7,3 +7,6 @@ uv.lock
 .venv
 .env
 *.pdf
+__pycache__/
+*.pyc
+.pytest_cache/
