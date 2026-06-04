@@ -192,16 +192,24 @@ target image → VLM caption → structured visual analysis → modifier bank ex
 
 ```
 IAGTP2_2021231014_2021221971/
-├── README.md                           # This file
-├── TP2_Project.ipynb                   # Main implementation notebook
-├── tp2-chosen/                         # Target images
-├── model_cache/                        # Cached models (CLIP, BLIP, LCM, etc.)
-└── outputs/                            # Generated results
-    ├── all_ranked_results.csv          # Aggregated rankings across all runs
-    ├── final_prompts.csv               # Best prompts per target image
-    ├── round_comparison.csv            # Metrics comparison between rounds
-    └── [timestamp]_round[N]_[stage]/   # Individual run outputs
+├── README.md                  # This file (comprehensive documentation)
+├── .gitignore                 # Git ignore rules
+├── requirements.txt           # Python dependencies
+├── TP2_Project.ipynb          # Main implementation notebook
+├── llm_refinement.py          # LLM-based prompt refinement functions
+└── tp2-chosen/                # Target images (6 PNG files)
 ```
+
+### Generated Outputs
+
+When running the notebook, the following files are created in the `outputs/` directory:
+
+- `final_prompts.csv` - Best prompt per target image
+- `final_top3_prompts.csv` - Top-3 best prompts per target
+- `all_ranked_results.csv` - All candidates ranked across all evaluation rounds
+- `round_comparison.csv` - Metrics comparison between initial, refined, and LLM rounds
+- `final_top3_gallery/` - Gallery folder with rendered images and prompts per target
+- `[timestamp]_round[N]_[stage]/` - Detailed per-round results and generated images
 
 ## Results
 
