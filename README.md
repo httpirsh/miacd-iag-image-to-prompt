@@ -10,12 +10,32 @@ This project implements **VLM-initialized, metric-guided iterative prompt invers
 
 This is not simple image captioning. A prompt is considered successful only if rendering it with the fixed `SimianLuo/LCM_Dreamshaper_v7` model using the encoded seed produces an image that closely matches the target.
 
+## Setup
+
+### Environment Configuration
+
+To use the LLM-based refinement features, you need to set up a `.env` file in the root directory:
+
+1. Create a file named `.env` in the project root.
+2. Add the following line to it:
+   ```env
+   GROQ_API_KEY=SUA_API_KEY
+   ```
+
+### Obtaining a Groq API Key
+
+1. Go to the [Groq Console](https://console.groq.com/).
+2. Sign in or create an account.
+3. Navigate to the **API Keys** section in the sidebar.
+4. Click **Create API Key**.
+5. Copy the generated key and paste it into your `.env` file.
+
 ## Pipeline Architecture
 
 The optimization loop follows:
 
 ```
-target image → VLM caption → structured visual analysis → modifier bank expansion 
+target image → VLM caption → structured visual analysis → modifier bank expansion
 → deterministic LCM render → image-side metrics → ranking → refinement
 ```
 
@@ -58,6 +78,7 @@ IAGTP2_2021231014_2021221971/
 ## Results
 
 ### Target Images Processed: 6
+
 - `1159_25.png` - Glass with orange juice and fruit
 - `1159_29.png` - Palm tree in ocean at sunset
 - `1159_3.png` - Anime warrior with armor and sword
@@ -77,6 +98,7 @@ IAGTP2_2021231014_2021221971/
 ### Execution Log
 
 Multiple optimization rounds completed:
+
 - Round 0: Initial prompt expansion (low VRAM mode)
 - Round 1: Metric-guided refinement
 - Round 2: LLM-based refinement (based on `llm_refinement_implementation_guide.pdf`)
