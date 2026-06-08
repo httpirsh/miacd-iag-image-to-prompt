@@ -193,11 +193,13 @@ target image → VLM caption → structured visual analysis → modifier bank ex
 ```
 IAGTP2_2021231014_2021221971/
 ├── README.md                  # This file (comprehensive documentation)
+├── .env                       # Groq API key configuration (create locally)
 ├── .gitignore                 # Git ignore rules
 ├── requirements.txt           # Python dependencies
 ├── TP2_Project.ipynb          # Main implementation notebook
 ├── llm_refinement.py          # LLM-based prompt refinement functions
-└── tp2-chosen/                # Target images (6 PNG files)
+├── tp2-chosen/                # Target images (6 PNG files)
+└── outputs/                   # Generated results and analysis
 ```
 
 ### Generated Outputs
@@ -209,7 +211,6 @@ When running the notebook, the following files are created in the `outputs/` dir
 - `all_ranked_results.csv` - All candidates ranked across all evaluation rounds
 - `round_comparison.csv` - Metrics comparison between initial, refined, and LLM rounds
 - `final_top3_gallery/` - Gallery folder with rendered images and prompts per target
-- `[timestamp]_round[N]_[stage]/` - Detailed per-round results and generated images
 
 ## Results
 
@@ -237,7 +238,28 @@ Multiple optimization rounds completed:
 
 - Round 0: Initial prompt expansion (low VRAM mode)
 - Round 1: Metric-guided refinement
-- Round 2: LLM-based refinement (based on `llm_refinement_implementation_guide.pdf`)
+- Round 2: LLM-based refinement via Groq API
+
+## How to Run
+
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Set up Groq API key** (required for LLM refinement):
+   - Create a `.env` file in the project root
+   - Add your Groq API key: `GROQ_API_KEY=your_key_here`
+   - See [Setup](#setup) section for details
+
+3. **Run the notebook**:
+   ```bash
+   jupyter notebook TP2_Project.ipynb
+   ```
+
+4. **Results**:
+   - Final outputs will be saved in the `outputs/` directory
+   - Check `final_prompts.csv` for the best prompts per target image
 
 ## Dependencies
 
@@ -247,6 +269,7 @@ Multiple optimization rounds completed:
 - CLIP for semantic similarity
 - LPIPS for perceptual loss
 - PIL, NumPy, Pandas, Matplotlib
+- python-dotenv (for `.env` configuration)
 
 ## Notes
 
