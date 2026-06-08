@@ -1,0 +1,15 @@
+Target: 7836.png
+============================================================
+
+Top-1  (score=0.8437, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_composition)
+CLIP=0.9166  LPIPS=0.6307  MSE=0.02551
+Prompt: a lone astronaut is seen standing on the surface of a dark alien planet, with a massive reddish planet looming large above, set against a backdrop of stars and space
+
+Top-2  (score=0.7383, family=metric_guided_refinement, type=refined_suffix)
+CLIP=0.9336  LPIPS=0.6673  MSE=0.03061
+Prompt: a lone astronaut standing on a dark alien planet looking up at enormous planets and a star - filled galaxy , small astronaut centered near the bottom , huge diagonal planet dominating the upper half , dramatic vast scale , deep outer space filled with stars , blue nebula clouds , massive planets and curved planetary horizon , stronger focus on the main subject
+
+Top-3  (score=0.7307, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_composition)
+CLIP=0.8964  LPIPS=0.6337  MSE=0.02479
+Prompt: a lone astronaut stands on a dark alien planet, looking up at enormous planets and stars, centered near the bottom, with a huge diagonal planet above
+

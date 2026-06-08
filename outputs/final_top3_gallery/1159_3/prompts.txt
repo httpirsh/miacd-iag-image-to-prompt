@@ -1,0 +1,15 @@
+Target: 1159_3.png
+============================================================
+
+Top-1  (score=0.9481, family=metric_guided_refinement, type=refined_suffix)
+CLIP=0.8902  LPIPS=0.6266  MSE=0.05513
+Prompt: a serious blond male anime warrior wearing futuristic silver armor , holding a glowing orange fire sword , centered upper - body character portrait , frontal view , symmetrical heroic pose , character fills most of the frame , stronger focus on the main subject
+
+Top-2  (score=0.9401, family=initial_expansion, type=subject_composition)
+CLIP=0.8908  LPIPS=0.6278  MSE=0.05660
+Prompt: a serious blond male anime warrior wearing futuristic silver armor, holding a glowing orange fire sword, centered upper-body character portrait, frontal view, symmetrical heroic pose, character fills most of the frame
+
+Top-3  (score=0.9401, family=metric_guided_refinement, type=refined_original)
+CLIP=0.8908  LPIPS=0.6278  MSE=0.05660
+Prompt: a serious blond male anime warrior wearing futuristic silver armor , holding a glowing orange fire sword , centered upper - body character portrait , frontal view , symmetrical heroic pose , character fills most of the frame
+

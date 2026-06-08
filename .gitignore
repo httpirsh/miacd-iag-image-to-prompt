@@ -1,5 +1,4 @@
 model_cache/
-outputs/
 .python-version
 pyproject.toml
 main.py

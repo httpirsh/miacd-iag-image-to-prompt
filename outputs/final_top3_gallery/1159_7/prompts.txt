@@ -1,0 +1,15 @@
+Target: 1159_7.png
+============================================================
+
+Top-1  (score=0.9725, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_background)
+CLIP=0.8899  LPIPS=0.5181  MSE=0.02632
+Prompt: a small, orange-furred creature with long spiky fur emerging from a small, carved wooden block, on a plain brown studio floor
+
+Top-2  (score=0.9205, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_background)
+CLIP=0.8739  LPIPS=0.5210  MSE=0.03188
+Prompt: a small hedgehog-like creature with very long spiky orange fur emerging from a small, intricately carved wooden cube, on a warm brown background and matching floor
+
+Top-3  (score=0.9171, family=metric_guided_refinement, type=refined_suffix)
+CLIP=0.9032  LPIPS=0.5336  MSE=0.04721
+Prompt: a small hedgehog - like creature with very long spiky orange fur emerging from the top of a carved wooden cube , realistic photography , stronger focus on the main subject
+
