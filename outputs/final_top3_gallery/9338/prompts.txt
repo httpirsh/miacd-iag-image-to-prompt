@@ -1,0 +1,15 @@
+Target: 9338.png
+============================================================
+
+Top-1  (score=0.9215, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_background)
+CLIP=0.8875  LPIPS=0.6504  MSE=0.03892
+Prompt: a cute, small, fantasy hamster-like creature with colorful dragon scales and tiny wings, on a painterly background with swirling colorful smoke and flame-like shapes
+
+Top-2  (score=0.8865, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_background)
+CLIP=0.8594  LPIPS=0.6391  MSE=0.03506
+Prompt: a colorful, fantasy hamster-like creature with tiny wings, dragon scales, and small horns, set against a dreamy, painterly background with swirling smoke and flame shapes
+
+Top-3  (score=0.8217, family=llm_refinement, type=groq_llama_3.1_refinement_r1_from_subject_background)
+CLIP=0.8390  LPIPS=0.6546  MSE=0.02274
+Prompt: a tiny, upright, hamster-like fantasy creature with colorful scales, small horns, and wings, in a vibrant, painterly environment with soft, magical lighting
+

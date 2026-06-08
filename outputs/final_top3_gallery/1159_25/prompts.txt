@@ -1,0 +1,15 @@
+Target: 1159_25.png
+============================================================
+
+Top-1  (score=1.0000, family=metric_guided_refinement, type=refined_suffix)
+CLIP=0.9442  LPIPS=0.6220  MSE=0.05717
+Prompt: a clear glass filled with fresh orange juice decorated with orange slices and pineapple pieces , still life product shot , glass placed slightly right of center , tabletop view with fruit arranged around the glass , warm brown tabletop with a round wooden board on the left and soft neutral background , more faithful colors
+
+Top-2  (score=0.8787, family=initial_expansion, type=compact_full)
+CLIP=0.9351  LPIPS=0.6303  MSE=0.06032
+Prompt: a clear glass filled with fresh orange juice decorated with orange slices and pineapple pieces, still life product shot, glass placed slightly right of center, tabletop view with fruit arranged around the glass, warm brown tabletop with a round wooden board on the left and soft neutral background
+
+Top-3  (score=0.8787, family=metric_guided_refinement, type=refined_original)
+CLIP=0.9351  LPIPS=0.6303  MSE=0.06032
+Prompt: a clear glass filled with fresh orange juice decorated with orange slices and pineapple pieces , still life product shot , glass placed slightly right of center , tabletop view with fruit arranged around the glass , warm brown tabletop with a round wooden board on the left and soft neutral background
+
