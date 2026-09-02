@@ -38,10 +38,10 @@ Every render is deterministic: the seed is derived from the target filename and 
 ### Scoring
 
 ```python
-score = 0.45 * clip_similarity_norm + 0.45 * (1 - lpips_norm) + 0.10 * (1 - mse_norm)
+score = 0.50 * clip_similarity_norm + 0.40 * (1 - lpips_norm) + 0.10 * (1 - mse_norm)
 ```
 
-CLIP and LPIPS are weighted equally as the primary semantic/perceptual signals; MSE contributes a smaller pixel-level correction. All three are min-max normalized *within each target's candidate pool* before combining, so no single metric's raw scale dominates.
+CLIP is weighted highest as the primary semantic signal, LPIPS second as a perceptual check, and MSE contributes a smaller pixel-level correction. All three are min-max normalized *within each target's candidate pool* before combining, so no single metric's raw scale dominates.
 
 ### Models
 
