@@ -1,44 +1,37 @@
 import json
-import re
 import os
-import pandas as pd
-from pathlib import Path
-from groq import Groq
+import re
+
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
+
 def call_llm(instruction, api_key=None):
-    """
-    Calls the Groq API (Llama 3.1 8B Instant) for prompt refinement.
-    """
+    """Calls the Groq API (Llama 3.1 8B Instant) for prompt refinement."""
     if api_key is None:
         api_key = os.getenv("GROQ_API_KEY")
-    
+
     if not api_key:
         raise ValueError("GROQ_API_KEY not found. Check your .env file.")
-        
+
     client = Groq(api_key=api_key)
-    
     model_name = "llama-3.1-8b-instant"
-    
+
     try:
         print(f"  > Attempting {model_name}...", end=" ")
         chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": instruction,
-                }
-            ],
+            messages=[{"role": "user", "content": instruction}],
             model=model_name,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
         print("✅")
         return chat_completion.choices[0].message.content
     except Exception as e:
         print(f"⚠️ (Error: {str(e)[:50]})")
         raise e
+
 
 def analysis_to_text(analysis):
     parts = []
@@ -50,6 +43,7 @@ def analysis_to_text(analysis):
             parts.append(f"{key}: {value}")
     return "\n".join(parts)
 
+
 def make_metric_feedback(row):
     return f"""
 Current score: {row.get("score")}
@@ -57,6 +51,7 @@ CLIP similarity: {row.get("clip_similarity")} higher is better
 LPIPS: {row.get("lpips")} lower is better
 MSE: {row.get("mse")} lower is better
 """.strip()
+
 
 def build_refinement_instruction(target_key, analysis, row, n_variants=4):
     target_description = analysis_to_text(analysis)
@@ -91,6 +86,7 @@ Return a JSON object with a single key 'prompts' containing an array of strings.
 Example: {{"prompts": ["refined prompt 1", "refined prompt 2", ...]}}
 """
 
+
 def parse_llm_prompt_variants(response_text):
     try:
         # Find JSON block
@@ -98,22 +94,22 @@ def parse_llm_prompt_variants(response_text):
         json_str = match.group(0) if match else response_text
         data = json.loads(json_str)
         prompts = [p.strip() for p in data.get("prompts", []) if p.strip()]
-        return prompts[:4] # Limit to requested number
+        return prompts[:4]  # Limit to requested number
     except Exception as e:
         print(f"    [Parsing Error] {e}")
         return []
 
-def build_refined_candidate_bank(top_df, target_analysis, api_key=None, iteration=1, top_k_per_target=3, variants_per_prompt=4):
+
+def build_llm_refined_bank(top_df, target_analysis, api_key=None, iteration=1, top_k_per_target=3, variants_per_prompt=4):
+    """Ask the LLM to refine each target's top-k prompts, using the metrics as feedback."""
     refined_bank = {}
     for target, group in top_df.groupby("target"):
         target_key = str(target).replace(".png", "").replace(".jpg", "")
         refined_bank[target_key] = []
-        
-        # Take top K prompts for this target
+
         best_prompts = group.sort_values("score", ascending=False).head(top_k_per_target)
-        
         print(f"  > Refining {target_key} (using top {len(best_prompts)} prompts)...")
-        
+
         for _, row in best_prompts.iterrows():
             instruction = build_refinement_instruction(target_key, target_analysis.get(target_key, {}), row, variants_per_prompt)
             try:
@@ -121,36 +117,9 @@ def build_refined_candidate_bank(top_df, target_analysis, api_key=None, iteratio
                 new_prompts = parse_llm_prompt_variants(response)
                 for p in new_prompts:
                     refined_bank[target_key].append({
-                        "prompt": p, 
-                        "prompt_type": f"groq_llama_3.1_refinement_r{iteration}_from_{row.get('prompt_type', 'unknown')}"
+                        "prompt": p,
+                        "prompt_type": f"groq_llama_3.1_refinement_r{iteration}_from_{row.get('prompt_type', 'unknown')}",
                     })
             except Exception as e:
                 print(f"    Error on {target_key}: {e}")
     return refined_bank
-
-def add_combined_score(df, clip_weight=0.45, lpips_weight=0.45, mse_weight=0.10):
-    """
-    Normalize metrics per target and compute one combined score.
-    Higher score = better prompt.
-    """
-    df = df.copy()
-
-    def normalize_group(group):
-        group = group.copy()
-        def minmax(series):
-            if series.max() == series.min():
-                return series * 0.0 + 1.0 # If all same, return 1.0
-            return (series - series.min()) / (series.max() - series.min() + 1e-8)
-
-        group["clip_norm"] = minmax(group["clip_similarity"])
-        group["lpips_norm"] = minmax(group["lpips"])
-        group["mse_norm"] = minmax(group["mse"])
-
-        group["score"] = (
-            clip_weight * group["clip_norm"]
-            + lpips_weight * (1.0 - group["lpips_norm"])
-            + mse_weight * (1.0 - group["mse_norm"])
-        )
-        return group
-
-    return df.groupby("target", group_keys=False).apply(normalize_group)

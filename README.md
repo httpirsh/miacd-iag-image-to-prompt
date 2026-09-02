@@ -56,8 +56,8 @@ CLIP and LPIPS are weighted equally as the primary semantic/perceptual signals; 
 ## Project structure
 
 ```
-├── TP2_Project.ipynb    # Full pipeline: rendering, metrics, search, evaluation
-├── llm_refinement.py    # Groq-based prompt refinement + combined scoring
+├── prompt_inversion/     # The pipeline: rendering, metrics, candidate generation, scoring, refinement
+├── TP2_Project.ipynb     # Orchestration + the demo run over the 6 target images
 ├── tp2-chosen/           # 6 target images used as inversion targets
 ├── outputs/              # Summary CSVs + final_top3_gallery/ (per-run candidates are gitignored)
 └── assets/examples/      # Images used in this README
