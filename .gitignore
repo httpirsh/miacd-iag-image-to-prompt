@@ -9,3 +9,6 @@ uv.lock
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Per-run intermediate candidates/renders (timestamped); keep outputs/final_top3_gallery/ and the summary CSVs
+outputs/[0-9]*_round*/

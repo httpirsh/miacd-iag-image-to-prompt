@@ -59,7 +59,7 @@ CLIP and LPIPS are weighted equally as the primary semantic/perceptual signals; 
 ├── TP2_Project.ipynb    # Full pipeline: rendering, metrics, search, evaluation
 ├── llm_refinement.py    # Groq-based prompt refinement + combined scoring
 ├── tp2-chosen/           # 6 target images used as inversion targets
-├── outputs/              # Per-run candidates, rankings, and final galleries
+├── outputs/              # Summary CSVs + final_top3_gallery/ (per-run candidates are gitignored)
 └── assets/examples/      # Images used in this README
 ```
 
